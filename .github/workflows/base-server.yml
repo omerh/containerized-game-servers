@@ -33,9 +33,9 @@ jobs:
 
       - name: Verify ECR
         run: |
-          check=$(aws ecr describe-repositories  --region ${{ env.AWS_REGION }} --repository-names ${{ env.BRANCH_NAME }} | jq -r .repositories[].repositoryName | wc -l)
+          check=$(aws ecr describe-repositories  --region ${{ env.AWS_REGION }} --repository-names ${{ github.event.repository.name }} | jq -r .repositories[].repositoryName | wc -l)
           if [[ $check -eq 0 ]]; then
-            aws ecr --region ${{ env.AWS_REGION }} create-repository --repository-name ${{ env.BRANCH_NAME }}
+            aws ecr --region ${{ env.AWS_REGION }} create-repository --repository-name ${{ github.event.repository.name }}
           fi
           done
 
