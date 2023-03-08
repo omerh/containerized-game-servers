@@ -47,5 +47,6 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
+          context: ./supertuxkart/server/base-image-multiarch-python3/
           file: ./supertuxkart/server/base-image-multiarch-python3/Dockerfile
           tags: ${{ env.AWS_ACCOUNT }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ github.event.repository.name }}:${{ env.BRANCH_NAME }}-${{ github.run_number }}
