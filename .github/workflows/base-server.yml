@@ -1,0 +1,54 @@
+name: Build
+
+on: [push]
+
+env:
+  AWS_REGION: eu-west-1
+  AWS_ACCOUNT: 910416587115
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Get Branch name
+        uses: nelonoel/branch-name@v1.0.1
+
+      - name: Install awscli
+        run: pip3 install awscli
+      
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify ECR
+        run: |
+          check=$(aws ecr describe-repositories  --region ${{ env.AWS_REGION }} --repository-names ${{ env.BRANCH_NAME }} | jq -r .repositories[].repositoryName | wc -l)
+          if [[ $check -eq 0 ]]; then
+            aws ecr --region ${{ env.AWS_REGION }} create-repository --repository-name ${{ env.BRANCH_NAME }}
+          fi
+          done
+
+      - name: Login to ECR
+        run: $(aws ecr get-login --no-include-email --region ${{ env.AWS_REGION }}) > /dev/null
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          push: true
+          addLatest: true
+          enableBuildKit: true
+          multiPlatform: true
+          dockerfile: ./supertuxkart/server/base-image-multiarch-python3/Dockerfile
+          tags: ${{ env.AWS_ACCOUNT }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ github.event.repository.name }}:${{ env.BRANCH_NAME }}-${{ github.run_number }}
