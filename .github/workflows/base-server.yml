@@ -31,13 +31,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Verify ECR
-        run: |
-          check=$(aws ecr describe-repositories  --region ${{ env.AWS_REGION }} --repository-names ${{ github.event.repository.name }} | jq -r .repositories[].repositoryName | wc -l)
-          if [[ $check -eq 0 ]]; then
-            aws ecr --region ${{ env.AWS_REGION }} create-repository --repository-name ${{ github.event.repository.name }}
-          fi
-          done
+      # - name: Verify ECR
+      #   run: |
+      #     check=$(aws ecr describe-repositories  --region ${{ env.AWS_REGION }} --repository-names ${{ github.event.repository.name }} | jq -r .repositories[].repositoryName | wc -l)
+      #     if [[ $check -eq 0 ]]; then
+      #       aws ecr --region ${{ env.AWS_REGION }} create-repository --repository-name ${{ github.event.repository.name }}
+      #     fi
+      #     done
 
       - name: Login to ECR
         run: $(aws ecr get-login --no-include-email --region ${{ env.AWS_REGION }}) > /dev/null
